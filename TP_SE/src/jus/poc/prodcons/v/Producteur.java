@@ -25,7 +25,7 @@ public class Producteur extends Acteur implements _Producteur {
     public Producteur(int type, Observateur observateur, int moyenneTempsDeTraitement, int deviationTempsDeTraitement, Message msg) throws ControlException{
         
         super(1, observateur, moyenneTempsDeTraitement, deviationTempsDeTraitement);
-        
+        this.msg = msg;
         
     }
     
@@ -36,7 +36,7 @@ public class Producteur extends Acteur implements _Producteur {
 
     @Override
     public int moyenneTempsDeTraitement() {
-        
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
