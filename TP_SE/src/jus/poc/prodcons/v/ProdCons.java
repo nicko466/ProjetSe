@@ -21,6 +21,10 @@ public class ProdCons implements Tampon {
     private Message[] buffer;
     private int indice_insert,indice_lect;
     
+    /**
+     * constructeur
+     * @param n : taille du buffer
+     */
     public ProdCons(int n){
         // taille du buffer
         taille = n;
@@ -42,7 +46,7 @@ public class ProdCons implements Tampon {
     
     /**
      * producteur depose un message dans le buffer
-     * 
+     * @param 
      */    
     @Override   
     public synchronized void put(_Producteur prod, Message msg) throws Exception, InterruptedException {
@@ -97,7 +101,7 @@ public class ProdCons implements Tampon {
     /**
      * renvoie taille du buffer
      * @param
-     * @return int
+     * @return int : taille
      */ 
     @Override
     public int taille() {
