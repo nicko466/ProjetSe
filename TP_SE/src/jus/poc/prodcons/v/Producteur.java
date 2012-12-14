@@ -22,7 +22,8 @@ public class Producteur extends Acteur implements _Producteur {
     private int moyenneTempsDeTraitement;
     private int deviationTempsDeTraitement;
 
-    public Producteur(int type, Observateur observateur, int moyenneTempsDeTraitement, int deviationTempsDeTraitement, MessageX msg) throws ControlException{
+    public Producteur(Observateur observateur, int moyenneTempsDeTraitement, 
+            int deviationTempsDeTraitement, MessageX msg) throws ControlException{
         
         super(1, observateur, moyenneTempsDeTraitement, deviationTempsDeTraitement);
         this.msg = msg;
@@ -51,7 +52,20 @@ public class Producteur extends Acteur implements _Producteur {
 
     @Override
     public void run() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        boolean mess = true;
+        while(mess){
+            try{
+                if(msg!=null){
+                    System.out.println(""+msg);
+                    nbMess++;
+                    Thread.sleep(Aleatoire.valeur(moyenneTempsDeTraitement, deviationTempsDeTraitement)*100);                   
+                }
+                else{
+                    mess=false;
+                }
+            }
+            catch(Exception e){}
+        }
     }
     
 }

@@ -18,17 +18,22 @@ public class Consommateur extends Acteur implements _Consommateur {
     
     private int nbMess = 0;
     private Message msg = null;
-    private ProdCons buffer = null;
     //private Aleatoire traitement;
     private int moyenneTempsDeTraitement;
     private int deviationTempsDeTraitement;
     
-    
-    public Consommateur(Observateur observateur, int moyenneTempsDeTraitement, int deviationTempsDeTraitement, ProdCons buff) throws ControlException{
-        super(2, observateur, moyenneTempsDeTraitement, deviationTempsDeTraitement);
-        this.buffer=buff;       
+    /**
+     * Conscructeur du consommateur 
+     * @param observateur
+     * @param moyenneTempsDeTraitement
+     * @param deviationTempsDeTraitement
+     * @throws ControlException 
+     */
+    public Consommateur(Observateur observateur, int moyenneTempsDeTraitement, 
+            int deviationTempsDeTraitement) throws ControlException{
+        super(2, observateur, moyenneTempsDeTraitement, deviationTempsDeTraitement);    
         this.deviationTempsDeTraitement=deviationTempsDeTraitement;
-        this.moyenneTempsDeTraitement=moyenneTempsDeTraitement;      
+        this.moyenneTempsDeTraitement=moyenneTempsDeTraitement;
     }
     
     @Override
@@ -36,7 +41,6 @@ public class Consommateur extends Acteur implements _Consommateur {
         boolean mess = true;
         while(mess){
             try{
-                msg= this.buffer.get(this);
                 if(msg!=null){
                     nbMess++;
                     Thread.sleep(Aleatoire.valeur(moyenneTempsDeTraitement, deviationTempsDeTraitement)*100);                   
@@ -54,6 +58,36 @@ public class Consommateur extends Acteur implements _Consommateur {
         return this.nbMess;
     }
 
+    public int getDeviationTempsDeTraitement() {
+        return deviationTempsDeTraitement;
+    }
 
+    private void setDeviationTempsDeTraitement(int deviationTempsDeTraitement) {
+        this.deviationTempsDeTraitement = deviationTempsDeTraitement;
+    }
+
+    public int getMoyenneTempsDeTraitement() {
+        return moyenneTempsDeTraitement;
+    }
+
+    private void setMoyenneTempsDeTraitement(int moyenneTempsDeTraitement) {
+        this.moyenneTempsDeTraitement = moyenneTempsDeTraitement;
+    }
+
+    public Message getMsg() {
+        return msg;
+    }
+
+    private void setMsg(Message msg) {
+        this.msg = msg;
+    }
+
+    public int getNbMess() {
+        return nbMess;
+    }
+
+    private void setNbMess(int nbMess) {
+        this.nbMess = nbMess;
+    }
     
 }
