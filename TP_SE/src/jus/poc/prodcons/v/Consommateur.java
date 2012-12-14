@@ -26,8 +26,7 @@ public class Consommateur extends Acteur implements _Consommateur {
     
     public Consommateur(Observateur observateur, int moyenneTempsDeTraitement, int deviationTempsDeTraitement, ProdCons buff) throws ControlException{
         super(2, observateur, moyenneTempsDeTraitement, deviationTempsDeTraitement);
-        this.buffer=buff; 
-        
+        this.buffer=buff;       
         this.deviationTempsDeTraitement=deviationTempsDeTraitement;
         this.moyenneTempsDeTraitement=moyenneTempsDeTraitement;      
     }
@@ -40,7 +39,7 @@ public class Consommateur extends Acteur implements _Consommateur {
                 msg= this.buffer.get(this);
                 if(msg!=null){
                     nbMess++;
-                    Thread.sleep(Aleatoire.valeur(moyenneTempsDeTraitement, deviationTempsDeTraitement)*100);
+                    Thread.sleep(Aleatoire.valeur(moyenneTempsDeTraitement, deviationTempsDeTraitement)*100);                   
                 }
                 else{
                     mess=false;

@@ -12,6 +12,14 @@ import jus.poc.prodcons.Message;
  */
 public class MessageX implements Message {
     
+    String msg;
     
+    public MessageX(String msg){
+        this.msg=msg;
+    }
     
+    @Override
+    public String toString(){
+        return this.msg;
+    }
 }
