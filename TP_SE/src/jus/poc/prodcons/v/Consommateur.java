@@ -16,11 +16,10 @@ import jus.poc.prodcons.*;
  */
 public class Consommateur extends Acteur implements _Consommateur {
     
+    //Nombre de message lu par le consommateur
     private int nbMess = 0;
-    private Message msg = null;
-    //private Aleatoire traitement;
-    private int moyenneTempsDeTraitement;
-    private int deviationTempsDeTraitement;
+    //Le message que lit le consommateur
+    private MessageX msg = null;
     
     /**
      * Conscructeur du consommateur 
@@ -38,21 +37,45 @@ public class Consommateur extends Acteur implements _Consommateur {
     
     @Override
     public void run() {
-        boolean mess = true;
-        while(mess){
+        while(!TestProdCons.getStop()){
+            retirer();
+            consommer();
             try{
-                if(msg!=null){
-                    nbMess++;
-                    Thread.sleep(Aleatoire.valeur(moyenneTempsDeTraitement, deviationTempsDeTraitement)*100);                   
-                }
-                else{
-                    mess=false;
-                }
+                Thread.sleep(Aleatoire.valeur(moyenneTempsDeTraitement, deviationTempsDeTraitement)*100); 
             }
             catch(Exception e){}
         }
-    }    
+    }
+    
+    /**
+     * Permet de retirer un message du tampon
+     */
+    public void retirer(){
+        nbMess++;
+        try {
+            this.setMsg(TestProdCons.tampon.get(this));
+            observateur.retraitMessage(this, msg);
+        } catch (Exception ex) {
+            Logger.getLogger(Consommateur.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
+    
+    /**
+     * Affiche le message que le consommateur à retirer du tampon
+     */
+    public void consommer(){
+        try {   
+            observateur.consommationMessage(this, msg, Aleatoire.valeur(moyenneTempsDeTraitement, deviationTempsDeTraitement)*100);
+        } catch (ControlException ex) {
+            Logger.getLogger(Consommateur.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        System.out.println("Consommateur : "+this.identification()+" à consommer le message n° "
+                +getNbMess()+" contenant : \n\t\t"+getMsg()+"\n");
+        TestProdCons.incrémenteNombreMessageConsommées();
+    }
+    
+    
     @Override
     public int nombreDeMessages() {
         return this.nbMess;
@@ -74,12 +97,12 @@ public class Consommateur extends Acteur implements _Consommateur {
         this.moyenneTempsDeTraitement = moyenneTempsDeTraitement;
     }
 
-    public Message getMsg() {
+    public MessageX getMsg() {
         return msg;
     }
 
     private void setMsg(Message msg) {
-        this.msg = msg;
+        this.msg = (MessageX) msg;
     }
 
     public int getNbMess() {

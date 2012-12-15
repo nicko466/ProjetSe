@@ -4,6 +4,8 @@
  */
 package jus.poc.prodcons.v;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jus.poc.prodcons.*;
 
 /**
@@ -14,28 +16,72 @@ import jus.poc.prodcons.*;
 
 public class Producteur extends Acteur implements _Producteur {
     
-    Aleatoire alea;
     private int nbMess = 0;
     private MessageX msg = null;
-    private ProdCons buffer = null;
-    //private Aleatoire traitement;
-    private int moyenneTempsDeTraitement;
-    private int deviationTempsDeTraitement;
+    private int nombreDeMessageAEmettre;
 
+    /**
+     * Constructeur de Producteur 
+     * @param observateur
+     * @param moyenneTempsDeTraitement variable jouant sur le sleep du Thread
+     * @param deviationTempsDeTraitement variable jouant sur le sleep du Thread
+     * @throws ControlException 
+     */
     public Producteur(Observateur observateur, int moyenneTempsDeTraitement, 
-            int deviationTempsDeTraitement, MessageX msg) throws ControlException{
-        
+            int deviationTempsDeTraitement,int NombreMoyenDeProduction , int DeviationNombreMoyenDeProduction) throws ControlException{
         super(1, observateur, moyenneTempsDeTraitement, deviationTempsDeTraitement);
-        this.msg = msg;
+        this.nombreDeMessageAEmettre = Aleatoire.valeur(NombreMoyenDeProduction,DeviationNombreMoyenDeProduction);
         
+    }
+
+    @Override
+    public void run() {
+        while(nbMess < getNombreDeMessageAEmettre()){
+            produire();
+            System.out.println(msg);
+            deposer();
+            try{
+                    Thread.sleep(Aleatoire.valeur(moyenneTempsDeTraitement, deviationTempsDeTraitement)*100);              
+            }
+            catch(Exception e){}
+        }
     }
     
-    @Override
-    public int identification() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    /**
+     * Permet de produire le message du producteur en remplissant l'attribut msg du producteur
+     */
+    public void produire(){
+        this.nbMess++;
+        this.msg =new MessageX(this, "");
+        try {
+            observateur.productionMessage(this, msg, Aleatoire.valeur(moyenneTempsDeTraitement, deviationTempsDeTraitement)*100);
+        } catch (ControlException ex) {
+            Logger.getLogger(Producteur.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    /**
+     *Permet de déposer le message du producteur dans le tampon
+     */
+    public void deposer(){
+        try {
+            TestProdCons.tampon.put(this, msg);
+            observateur.depotMessage(this, msg);
+        } catch (Exception ex) {
+            Logger.getLogger(Producteur.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    
+    public int getNombreDeMessageAEmettre() {
+        return nombreDeMessageAEmettre;
     }
 
-    @Override
+    public void setNombreDeMessageAEmettre(int nombreDeMessageAEmettre) {
+        this.nombreDeMessageAEmettre = nombreDeMessageAEmettre;
+    }
+    
+        @Override
     public int moyenneTempsDeTraitement() {
         return this.moyenneTempsDeTraitement;
     }
@@ -48,24 +94,6 @@ public class Producteur extends Acteur implements _Producteur {
     @Override
     public int nombreDeMessages() {
         return this.nbMess;
-    }
-
-    @Override
-    public void run() {
-        boolean mess = true;
-        while(mess){
-            try{
-                if(msg!=null){
-                    System.out.println(""+msg);
-                    nbMess++;
-                    Thread.sleep(Aleatoire.valeur(moyenneTempsDeTraitement, deviationTempsDeTraitement)*100);                   
-                }
-                else{
-                    mess=false;
-                }
-            }
-            catch(Exception e){}
-        }
     }
     
 }

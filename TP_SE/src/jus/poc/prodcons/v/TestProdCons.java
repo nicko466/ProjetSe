@@ -4,11 +4,9 @@
  */
 package jus.poc.prodcons.v;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.InvalidPropertiesFormatException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,21 +18,31 @@ import jus.poc.prodcons.*;
  */
 public class TestProdCons extends Simulateur {
     //Les différents attributs présents dans le xml à parser...
-    int nbProd;
-    int nbCons;
-    int nbBuffer;
-    int tempsMoyenProduction;
-    int deviationTempsMoyenProduction;
-    int tempsMoyenConsommation;
-    int deviationTempsMoyenConsommation;
-    int nombreMoyenDeProduction;
-    int deviationNombreMoyenDeProduction;
-    int nombreMoyenNbExemplaire;
-    int deviationNombreMoyenNbExemplaire;
-    static ProdCons tampon;
-
+    private int nbProd;
+    private int nbCons;
+    private int nbBuffer;
+    private int tempsMoyenProduction;
+    private int deviationTempsMoyenProduction;
+    private int tempsMoyenConsommation;
+    private int deviationTempsMoyenConsommation;
+    private int nombreMoyenDeProduction;
+    private int deviationNombreMoyenDeProduction;
+    private int nombreMoyenNbExemplaire;
+    private int deviationNombreMoyenNbExemplaire;
+    //Le tampon indiquant la ressource auquelle les consommateurs et producteurs veulent accéder
+    public static ProdCons tampon;
+    //Nombre de messages lues par les consommateurs
+    private static int messagesLuesConso;
+    //Nombre de messages à envoyer
+    private static int messageAEnvoyer; 
+    //Booleen indiquant que tous les messages ont été lus
+    private static boolean STOP ;
+    
     public TestProdCons(Observateur observateur) {
         super(observateur);
+        messageAEnvoyer = 0;
+        messagesLuesConso = 0;
+        STOP = false;
     }
 
     @Override
@@ -43,22 +51,22 @@ public class TestProdCons extends Simulateur {
         String file = "options.xml";
         init(file);
         this.observateur.init(nbProd, nbCons, nbBuffer);
-        //Tampon que se partage producteur et consommateur
+        //Tampon que se partage producteur et consommateur  
         tampon = new ProdCons(nbBuffer);
+        //Création des différents Producteurs
+        for (int i =0 ; i!=nbProd;i++){
+            Producteur p = new Producteur(this.observateur, this.getTempsMoyenProduction(),
+                    this.getDeviationTempsMoyenProduction(),this.getNombreMoyenDeProduction(),this.getDeviationNombreMoyenDeProduction());
+            messageAEnvoyer+= p.getNombreDeMessageAEmettre();
+            this.observateur.newProducteur(p);
+            p.start();
+        } 
         //Création des différents consommateurs
         for (int i =0 ; i!=nbCons;i++){
             Consommateur c = new Consommateur(this.observateur, this.getTempsMoyenConsommation(), this.getDeviationTempsMoyenConsommation());
             this.observateur.newConsommateur(c);
             c.start();
-        }
-        //Création des différents Producteurs
-        for (int i =0 ; i!=nbProd;i++){
-            Producteur p = new Producteur(this.observateur, this.getTempsMoyenProduction(), this.getDeviationTempsMoyenProduction(),new MessageX("producteur :"+i));
-            this.observateur.newProducteur(p);
-            p.start();
-        }
-        
-        
+        }       
     }
 
  
@@ -91,11 +99,26 @@ public class TestProdCons extends Simulateur {
         nombreMoyenDeProduction = Integer.parseInt(properties.getProperty("nombreMoyenDeProduction"));
         deviationNombreMoyenDeProduction = Integer.parseInt(properties.getProperty("deviationNombreMoyenDeProduction"));
         nombreMoyenNbExemplaire = Integer.parseInt(properties.getProperty("nombreMoyenNbExemplaire"));
-        deviationNombreMoyenNbExemplaire = Integer.parseInt(properties.getProperty("deviationNombreMoyenNbExemplaire"));        
+        deviationNombreMoyenNbExemplaire = Integer.parseInt(properties.getProperty("deviationNombreMoyenNbExemplaire"));
+        try {
+            fichier.close();
+        } catch (IOException ex) {
+            Logger.getLogger(TestProdCons.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
+    public static void incrémenteNombreMessageConsommées(){
+        messagesLuesConso++;
+        if (messagesLuesConso == messageAEnvoyer ){
+            STOP = true;
+            System.exit(0);
+        }
+    }
     
-
+    public static boolean getStop(){
+        return STOP;
+    }
+    
     public static void main(String[] args) {
         new TestProdCons(new Observateur()).start();
     }
