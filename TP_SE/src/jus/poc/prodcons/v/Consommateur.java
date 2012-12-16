@@ -54,7 +54,8 @@ public class Consommateur extends Acteur implements _Consommateur {
         nbMess++;
         try {
             this.setMsg(TestProdCons.tampon.get(this));
-            observateur.retraitMessage(this, msg);
+//            System.out.println("valeur de msg "+msg.toString());
+            observateur.retraitMessage(this, (Message)msg);
         } catch (Exception ex) {
             Logger.getLogger(Consommateur.class.getName()).log(Level.SEVERE, null, ex);
         }

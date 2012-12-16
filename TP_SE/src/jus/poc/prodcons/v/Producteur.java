@@ -16,9 +16,15 @@ import jus.poc.prodcons.*;
 
 public class Producteur extends Acteur implements _Producteur {
     
+    //Nombre de message distincts
     private int nbMess = 0;
+    //Message du producteur à émettre.
     private MessageX msg = null;
+    //Nombre de message distincts que le producteur doit émettre.
     private int nombreDeMessageAEmettre;
+    //permet de calculer le nombre d'exemplaire d'un message
+    private int nombreMoyenNbExemplaire;
+    private int deviationNombreMoyenNbExemplaire;
 
     /**
      * Constructeur de Producteur 
@@ -28,10 +34,13 @@ public class Producteur extends Acteur implements _Producteur {
      * @throws ControlException 
      */
     public Producteur(Observateur observateur, int moyenneTempsDeTraitement, 
-            int deviationTempsDeTraitement,int NombreMoyenDeProduction , int DeviationNombreMoyenDeProduction) throws ControlException{
+            int deviationTempsDeTraitement,int NombreMoyenDeProduction ,
+            int DeviationNombreMoyenDeProduction,int nombreMoyenNbExemplaire,
+            int deviationNombreMoyenNbExemplaire) throws ControlException{
         super(1, observateur, moyenneTempsDeTraitement, deviationTempsDeTraitement);
         this.nombreDeMessageAEmettre = Aleatoire.valeur(NombreMoyenDeProduction,DeviationNombreMoyenDeProduction);
-        
+        this.nombreMoyenNbExemplaire = nombreMoyenNbExemplaire;
+        this.deviationNombreMoyenNbExemplaire = deviationNombreMoyenNbExemplaire;
     }
 
     @Override
@@ -52,20 +61,22 @@ public class Producteur extends Acteur implements _Producteur {
      */
     public void produire(){
         this.nbMess++;
-        this.msg =new MessageX(this, "");
+        this.msg =new MessageX(this, "",getNombreMoyenNbExemplaire(),getDeviationNombreMoyenNbExemplaire());
+        TestProdCons.setNombreMessagesTotale(TestProdCons.getNombreMessagesTotale()+msg.getNombreExemplaire());
         try {
             observateur.productionMessage(this, msg, Aleatoire.valeur(moyenneTempsDeTraitement, deviationTempsDeTraitement)*100);
         } catch (ControlException ex) {
             Logger.getLogger(Producteur.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      *Permet de déposer le message du producteur dans le tampon
      */
     public void deposer(){
         try {
             TestProdCons.tampon.put(this, msg);
+            TestProdCons.tampon.initNombreExemplaire(msg.getNombreExemplaire());
             observateur.depotMessage(this, msg);
         } catch (Exception ex) {
             Logger.getLogger(Producteur.class.getName()).log(Level.SEVERE, null, ex);
@@ -75,10 +86,6 @@ public class Producteur extends Acteur implements _Producteur {
     
     public int getNombreDeMessageAEmettre() {
         return nombreDeMessageAEmettre;
-    }
-
-    public void setNombreDeMessageAEmettre(int nombreDeMessageAEmettre) {
-        this.nombreDeMessageAEmettre = nombreDeMessageAEmettre;
     }
     
         @Override
@@ -95,5 +102,23 @@ public class Producteur extends Acteur implements _Producteur {
     public int nombreDeMessages() {
         return this.nbMess;
     }
+    
+    
+    public int getDeviationNombreMoyenNbExemplaire() {
+        return deviationNombreMoyenNbExemplaire;
+    }
+
+    public void setDeviationNombreMoyenNbExemplaire(int deviationNombreMoyenNbExemplaire) {
+        this.deviationNombreMoyenNbExemplaire = deviationNombreMoyenNbExemplaire;
+    }
+
+    public int getNombreMoyenNbExemplaire() {
+        return nombreMoyenNbExemplaire;
+    }
+
+    public void setNombreMoyenNbExemplaire(int nombreMoyenNbExemplaire) {
+        this.nombreMoyenNbExemplaire = nombreMoyenNbExemplaire;
+    }
+    
     
 }

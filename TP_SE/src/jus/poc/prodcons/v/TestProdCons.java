@@ -31,17 +31,22 @@ public class TestProdCons extends Simulateur {
     private int deviationNombreMoyenNbExemplaire;
     //Le tampon indiquant la ressource auquelle les consommateurs et producteurs veulent accéder
     public static ProdCons tampon;
-    //Nombre de messages lues par les consommateurs
-    private static int messagesLuesConso;
+    //Nombre de messages distincts lues
+    private static int nombreMessagesDistinctsLues;
+    //Nombre de messages lues au totale;
+    private static int nombreMessagesLuesAuTotale;
     //Nombre de messages à envoyer
-    private static int messageAEnvoyer; 
+    private static int messageAEnvoyer;
+    //Nombre de message au totale
+    private static int nombreMessagesTotale;
     //Booleen indiquant que tous les messages ont été lus
     private static boolean STOP ;
     
     public TestProdCons(Observateur observateur) {
         super(observateur);
         messageAEnvoyer = 0;
-        messagesLuesConso = 0;
+        nombreMessagesDistinctsLues = 0;
+        nombreMessagesLuesAuTotale = 0;
         STOP = false;
     }
 
@@ -49,6 +54,7 @@ public class TestProdCons extends Simulateur {
     protected void run() throws Exception {
         // le corps de votre programme principal
         String file = "options.xml";
+        //Parse le fichier
         init(file);
         this.observateur.init(nbProd, nbCons, nbBuffer);
         //Tampon que se partage producteur et consommateur  
@@ -56,7 +62,8 @@ public class TestProdCons extends Simulateur {
         //Création des différents Producteurs
         for (int i =0 ; i!=nbProd;i++){
             Producteur p = new Producteur(this.observateur, this.getTempsMoyenProduction(),
-                    this.getDeviationTempsMoyenProduction(),this.getNombreMoyenDeProduction(),this.getDeviationNombreMoyenDeProduction());
+                    this.getDeviationTempsMoyenProduction(),this.getNombreMoyenDeProduction(),this.getDeviationNombreMoyenDeProduction(),
+                    this.getNombreMoyenNbExemplaire(),this.getDeviationNombreMoyenNbExemplaire());
             messageAEnvoyer+= p.getNombreDeMessageAEmettre();
             this.observateur.newProducteur(p);
             p.start();
@@ -108,11 +115,31 @@ public class TestProdCons extends Simulateur {
     }
     
     public static void incrémenteNombreMessageConsommées(){
-        messagesLuesConso++;
-        if (messagesLuesConso == messageAEnvoyer ){
+        nombreMessagesLuesAuTotale++;
+        if ( nombreMessagesDistinctsLues == messageAEnvoyer && nombreMessagesLuesAuTotale == nombreMessagesTotale){
             STOP = true;
             System.exit(0);
         }
+    }
+    
+    public static void incrémenteNombreDeMessagesDistinctsLues(){
+        TestProdCons.setNombreMessagesDistinctsLues(nombreMessagesDistinctsLues+1);
+    }
+    
+    public static int getNombreMessagesLuesAuTotale() {
+        return nombreMessagesLuesAuTotale;
+    }
+
+    private static void setNombreMessagesLuesAuTotale(int messagesLuesAuTotale) {
+        TestProdCons.nombreMessagesLuesAuTotale = messagesLuesAuTotale;
+    }
+
+    public static int getNombreMessagesDistinctsLues() {
+        return TestProdCons.nombreMessagesDistinctsLues;
+    }
+
+    private static void setNombreMessagesDistinctsLues(int nombreMessagesDistinctsLues) {
+        TestProdCons.nombreMessagesDistinctsLues = nombreMessagesDistinctsLues;
     }
     
     public static boolean getStop(){
@@ -209,5 +236,13 @@ public class TestProdCons extends Simulateur {
 
     private void setTempsMoyenProduction(int tempsMoyenProduction) {
         this.tempsMoyenProduction = tempsMoyenProduction;
+    }
+    
+    public static int getNombreMessagesTotale() {
+        return nombreMessagesTotale;
+    }
+
+    public static void setNombreMessagesTotale(int nombreMessagesTotale) {
+        TestProdCons.nombreMessagesTotale = nombreMessagesTotale;
     }
 }

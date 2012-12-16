@@ -18,6 +18,7 @@ import jus.poc.prodcons._Producteur;
 public class ProdCons implements Tampon {
     
     private int taille;
+    //Indique la quantité de message présent dans le tampon en attente d'être consommer
     private int nombreDeMessageEnAttente;
     private Message[] buffer;
     private int indice_insert,indice_lect;
@@ -25,6 +26,8 @@ public class ProdCons implements Tampon {
     private Semaphore notEmpty;
     private Semaphore mutexIn;
     private Semaphore mutexOut;
+    //Utilisé pour la getion des exemplaires. On possède un sémaphore pour chaque case du buffer indiquant le nombre d'exemplaire.
+    private Semaphore[] semaphoreNombreExemplaire;
     
     /**
      * constructeur
@@ -41,10 +44,15 @@ public class ProdCons implements Tampon {
         indice_insert=0;
         // indice de lecture
         indice_lect=0;
+        notEmpty = new Semaphore(taille);
         notFull = new Semaphore(taille);
-        notEmpty = new Semaphore(0);
         mutexIn = new Semaphore(1);
         mutexOut = new Semaphore(1);
+        semaphoreNombreExemplaire = new Semaphore[taille];
+        //Initialisation des semaphores pour à 0
+        for (int i=0;i!=taille;i++){
+            semaphoreNombreExemplaire[i] = new Semaphore(0);
+        }
     }
  
     /**
@@ -53,11 +61,13 @@ public class ProdCons implements Tampon {
      */    
     @Override   
     public void put(_Producteur prod, Message msg) throws Exception, InterruptedException {   
+        //Verifie qu'il existe une place disponible dans le tampon
         notFull.acquire();
         mutexIn.acquire();
+        //Permet d'ajouter le nombre d'exemplaire en attente dans la case
+        nombreDeMessageEnAttente += semaphoreNombreExemplaire[indice_insert].availablePermits();
         buffer[indice_insert]=msg;
         indice_insert=(indice_insert+1)%taille;
-        nombreDeMessageEnAttente++;
         mutexIn.release();
         notEmpty.release();
     }
@@ -72,14 +82,19 @@ public class ProdCons implements Tampon {
      */  
     @Override
     public Message get(_Consommateur cons) throws Exception, InterruptedException {
-        notEmpty.acquire();
+        semaphoreNombreExemplaire[indice_lect].acquire();
         mutexOut.acquire();
         Message buff = buffer[indice_lect];
-        buffer[indice_lect]=null;
-        indice_lect = (indice_lect+1)%taille;
         nombreDeMessageEnAttente--;
+        //On test si la case du tampon ne contient plus d'exemplaire du message// si la case du tampon est vide ou pas
+        if (semaphoreNombreExemplaire[indice_lect].availablePermits()==0){
+            buffer[indice_lect]=null;
+            indice_lect = (indice_lect+1)%taille;
+            notFull.release();
+            notEmpty.acquire();
+            TestProdCons.incrémenteNombreDeMessagesDistinctsLues();
+        }
         mutexOut.release();
-        notFull.release();
         return buff;       
     }
     
@@ -103,5 +118,12 @@ public class ProdCons implements Tampon {
         return taille;
     }
 
-
+    /**
+     * Permet d'initialiser le semaphore à l'indice indice_insert du tableau de semaphore à la valeur nombreExemplaire
+     * @param nombreExemplaire indique le nombre d'exemplaire d'un messageX d'un producteur
+     */
+    public void initNombreExemplaire(int nombreExemplaire){
+        semaphoreNombreExemplaire[indice_insert].release(nombreExemplaire);
+    }
+    
 }

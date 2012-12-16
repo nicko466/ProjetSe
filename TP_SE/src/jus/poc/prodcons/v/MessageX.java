@@ -4,25 +4,35 @@
  */
 package jus.poc.prodcons.v;
 
+import jus.poc.prodcons.Aleatoire;
 import jus.poc.prodcons.Message;
 /**
  *
  * @author rb-ka
  */
 public class MessageX implements Message {
+    //Champ string, le message du producteur    
     private String msg;
+    //indique le producteur possédant le message
     private Producteur producteur;
+    //Indique le nombre d'exemplaire du producteur
+    private int nombreExemplaire;
+
+
     
     /**
-     * Constructeur du message du producteur contenant identification du producteur
-     * et le nombre de messages envoyés par le producteur 
+     * Constructeur du message X
      * @param producteur
-     * @param msg 
+     * @param msg
+     * @param nombreMoyenNbExemplaire
+     * @param deviationNombreMoyenNbExemplaire 
      */
-    public MessageX(Producteur producteur,String msg){
+    public MessageX(Producteur producteur,String msg,int nombreMoyenNbExemplaire,int deviationNombreMoyenNbExemplaire){
         this.msg="Emission du Producteur : "+producteur.identification()+" "
         + "Message n° "+producteur.nombreDeMessages()+msg;
         this.producteur = producteur;
+        this.nombreExemplaire = (Aleatoire.valeur(nombreMoyenNbExemplaire, deviationNombreMoyenNbExemplaire));
+       System.out.println("Nombre exemplaire : "+this.nombreExemplaire);
     }
     
     @Override
@@ -40,6 +50,14 @@ public class MessageX implements Message {
 
     public Producteur getProducteur() {
         return producteur;
+    }
+    
+    public int getNombreExemplaire() {
+        return nombreExemplaire;
+    }
+
+    private void setNombrExemplaire(int nombreDExemplaire) {
+        this.nombreExemplaire = nombreDExemplaire;
     }
 
 }
