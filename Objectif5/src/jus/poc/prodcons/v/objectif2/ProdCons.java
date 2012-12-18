@@ -2,12 +2,14 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package jus.poc.prodcons.v;
+package jus.poc.prodcons.v.objectif2;
 
+import java.util.concurrent.Semaphore;
 import jus.poc.prodcons.Message;
 import jus.poc.prodcons.Tampon;
 import jus.poc.prodcons._Consommateur;
 import jus.poc.prodcons._Producteur;
+import jus.poc.prodcons.ui.Affichage;
 
 /**
  *
@@ -20,6 +22,10 @@ public class ProdCons implements Tampon {
     private int nombreDeMessageEnAttente;
     private Message[] buffer;
     private int indice_insert,indice_lect;
+    private Semaphore notFull;
+    private Semaphore notEmpty;
+    private Semaphore mutexIn;
+    private Semaphore mutexOut;
     
     /**
      * constructeur
@@ -36,6 +42,10 @@ public class ProdCons implements Tampon {
         indice_insert=0;
         // indice de lecture
         indice_lect=0;
+        notFull = new Semaphore(taille);
+        notEmpty = new Semaphore(0);
+        mutexIn = new Semaphore(1);
+        mutexOut = new Semaphore(1);
     }
  
     /**
@@ -43,16 +53,18 @@ public class ProdCons implements Tampon {
      * @param 
      */    
     @Override   
-    public synchronized void put(_Producteur prod, Message msg) throws Exception, InterruptedException {       
-        while(nombreDeMessageEnAttente == taille){
-            try{
-             wait();   
-            }catch(InterruptedException e){}            
-        }
+    public void put(_Producteur prod, Message msg) throws Exception, InterruptedException {   
+        notFull.acquire();
+        mutexIn.acquire();
+        Affichage.select(1, prod.identification());
+        Thread.sleep(jus.poc.prodcons.v.objectif5.TestProdCons.getTemps());
+        Affichage.addData("           P"+prod.identification()+"           ", indice_insert);
+        Thread.sleep(jus.poc.prodcons.v.objectif5.TestProdCons.getTemps());
         buffer[indice_insert]=msg;
         indice_insert=(indice_insert+1)%taille;
         nombreDeMessageEnAttente++;
-        notifyAll();        
+        mutexIn.release();
+        notEmpty.release();
     }
     
     
@@ -64,17 +76,19 @@ public class ProdCons implements Tampon {
      * @throws InterruptedException 
      */  
     @Override
-    public synchronized Message get(_Consommateur cons) throws Exception, InterruptedException {
-        while(enAttente()==0){
-            try{
-                wait();
-            }catch(InterruptedException e){}
-        }
+    public Message get(_Consommateur cons) throws Exception, InterruptedException {
+        notEmpty.acquire();
+        mutexOut.acquire();
+        Affichage.select(2, cons.identification());
+        Thread.sleep(jus.poc.prodcons.v.objectif5.TestProdCons.getTemps());
+        Affichage.deleteData(indice_lect);
+        Thread.sleep(jus.poc.prodcons.v.objectif5.TestProdCons.getTemps());
         Message buff = buffer[indice_lect];
         buffer[indice_lect]=null;
         indice_lect = (indice_lect+1)%taille;
         nombreDeMessageEnAttente--;
-        notifyAll();
+        mutexOut.release();
+        notFull.release();
         return buff;       
     }
     

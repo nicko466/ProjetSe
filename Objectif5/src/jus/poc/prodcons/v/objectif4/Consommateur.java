@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package jus.poc.prodcons.v;
+package jus.poc.prodcons.v.objectif4;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,7 +53,7 @@ public class Consommateur extends Acteur implements _Consommateur {
     public void retirer(){
         nbMess++;
         try {
-            this.setMsg(TestProdCons.tampon.get(this));
+            msg = (MessageX)TestProdCons.tampon.get(this);
 //            System.out.println("valeur de msg "+msg.toString());
             observateur.retraitMessage(this, (Message)msg);
         } catch (Exception ex) {
@@ -72,7 +72,7 @@ public class Consommateur extends Acteur implements _Consommateur {
             Logger.getLogger(Consommateur.class.getName()).log(Level.SEVERE, null, ex);
         }
         System.out.println("Consommateur : "+this.identification()+" à consommer le message n° "
-                +getNbMess()+" contenant : \n\t\t"+getMsg()+"\n");
+                +nbMess+" contenant : \n\t\t"+msg+"\n");
         TestProdCons.incrémenteNombreMessageConsommées();
     }
     
@@ -80,38 +80,6 @@ public class Consommateur extends Acteur implements _Consommateur {
     @Override
     public int nombreDeMessages() {
         return this.nbMess;
-    }
-
-    public int getDeviationTempsDeTraitement() {
-        return deviationTempsDeTraitement;
-    }
-
-    private void setDeviationTempsDeTraitement(int deviationTempsDeTraitement) {
-        this.deviationTempsDeTraitement = deviationTempsDeTraitement;
-    }
-
-    public int getMoyenneTempsDeTraitement() {
-        return moyenneTempsDeTraitement;
-    }
-
-    private void setMoyenneTempsDeTraitement(int moyenneTempsDeTraitement) {
-        this.moyenneTempsDeTraitement = moyenneTempsDeTraitement;
-    }
-
-    public MessageX getMsg() {
-        return msg;
-    }
-
-    private void setMsg(Message msg) {
-        this.msg = (MessageX) msg;
-    }
-
-    public int getNbMess() {
-        return nbMess;
-    }
-
-    private void setNbMess(int nbMess) {
-        this.nbMess = nbMess;
     }
     
 }

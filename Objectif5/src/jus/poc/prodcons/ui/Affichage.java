@@ -4,21 +4,19 @@
  */
 package jus.poc.prodcons.ui;
 import java.awt.BorderLayout;
-import java.awt.GridBagLayout;
+import java.awt.FlowLayout;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JCheckBox;
 import javax.swing.JSlider;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.plaf.basic.BasicButtonListener;
-import jus.poc.prodcons.v.TestProdCons;
-import org.omg.CORBA.DATA_CONVERSION;
-import sun.awt.RepaintArea;
+import jus.poc.prodcons.v.objectif5.TestProdCons;
 
 /**
  *
@@ -29,6 +27,7 @@ public class Affichage extends JFrame implements ChangeListener{
   private static JPanel panProducteur;
   private static JCheckBox[] rbProducteur; 
   private static JPanel panConsommateur;
+  private static JPanel panInformation;
   private static JCheckBox[] rbConsommateur;
   private ButtonGroup group = new ButtonGroup();
   private static JPanel panTampon;
@@ -38,6 +37,10 @@ public class Affichage extends JFrame implements ChangeListener{
   private JSlider temps;
   private static int idConsoSelectionne = 0;
   private static int idProdSelectionne = 0;
+  private static int nombreDeMessageLuesConso = 0;
+  private static int nombreDeMessagesTotales = 0;
+  private static JLabel descompte;
+
     
   public Affichage(int nbProd,int nbCons,int nbBuffer){
     this.setTitle("Producteur/Consommateur");
@@ -55,17 +58,19 @@ public class Affichage extends JFrame implements ChangeListener{
     temps = new JSlider(0,2000);
     temps.addChangeListener(this);
     //Initialisation des panels
+    panInformation = new JPanel();
     panTampon = new JPanel();
     panConsommateur= new JPanel();
     panProducteur = new JPanel();
     initJPanelConsommateur(nbCons);
     initJPanelProducteur();
-    initJPanelTampon(12);
+    initJPanelTampon();
+    initJPanelInformation();
     //Placement des différents JPanel
     this.add(panProducteur,BorderLayout.WEST);
     this.add(panConsommateur,BorderLayout.EAST);
     this.add(panTampon,BorderLayout.CENTER);
-    this.add(temps,BorderLayout.SOUTH);
+    this.add(panInformation,BorderLayout.SOUTH);
     this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);   
     this.pack();
     this.setVisible(true);
@@ -100,28 +105,41 @@ public class Affichage extends JFrame implements ChangeListener{
       //S'il s'agit d'un producteur
       if (type==1){
                   rbProducteur[idProdSelectionne].setSelected(false);
-                  idProdSelectionne = id;
-                 // rbProducteur[idProdSelectionne].repaint(); 
+                  idProdSelectionne = id; 
                   rbProducteur[id].setSelected(true);
-                 // rbProducteur[id].repaint(); 
               }
       //S'il s'agit d'un consommateur
       if(type==2){
                   rbConsommateur[idConsoSelectionne].setSelected(false);
                   idConsoSelectionne = id;
-                 // rbConsommateur[idConsoSelectionne].repaint(); 
-                  rbConsommateur[id].setSelected(true);
-                 // rbConsommateur[id].repaint(); 
+                  rbConsommateur[id].setSelected(true); 
       }
   }
   
-  public void initJPanelTampon(int taille){
+  public void initJPanelTampon(){
       JLabel labelProd = new JLabel("Tampon");
       JList list = new JList(data);
       list.setLayoutOrientation(JList.VERTICAL);
       panTampon.setLayout(new BoxLayout(panTampon, BoxLayout.Y_AXIS));
       panTampon.add(labelProd);
       panTampon.add(list);
+  }
+  
+  public void initJPanelInformation(){
+      //Panel slide
+      JPanel slide = new JPanel();
+      slide.setLayout(new BorderLayout());
+      slide.add(new JLabel("Vitesse d'execution"),BorderLayout.NORTH);
+      slide.add(temps);
+      panInformation.setLayout(new FlowLayout());
+      //Panel information
+      JPanel Info = new JPanel();
+      Info.setLayout(new FlowLayout());
+      Info.add(new JLabel("Messages lus :"));
+      descompte = new JLabel(nombreDeMessageLuesConso+"/"+nombreDeMessagesTotales);
+      Info.add(descompte);
+      panInformation.add(Info);
+      panInformation.add(slide);
   }
   
   public static void addData(String s,int position){
@@ -136,6 +154,17 @@ public class Affichage extends JFrame implements ChangeListener{
     @Override
     public void stateChanged(ChangeEvent ce) {
             TestProdCons.Temps = temps.getValue();
-            System.out.println(" VALEUR : "+temps.getValue());
+    }
+    
+    
+    public static void setNombreDeMessageLuesConso(int nombreDeMessageLuesConso) {
+        Affichage.nombreDeMessageLuesConso = nombreDeMessageLuesConso;
+        descompte.repaint();
+        System.out.println(" value : "+nombreDeMessageLuesConso);
+    }
+
+    public static void setNombreDeMessagesTotales(int nombreDeMessagesTotales) {
+        Affichage.nombreDeMessagesTotales = nombreDeMessagesTotales;
+         descompte.repaint();
     }
 }

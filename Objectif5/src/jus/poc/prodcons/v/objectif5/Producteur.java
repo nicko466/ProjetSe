@@ -2,9 +2,8 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package jus.poc.prodcons.v;
+package jus.poc.prodcons.v.objectif5;
 
-import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jus.poc.prodcons.*;
@@ -30,9 +29,8 @@ public class Producteur extends Acteur implements _Producteur {
      */
     public Producteur(Observateur observateur, int moyenneTempsDeTraitement, 
             int deviationTempsDeTraitement,int NombreMoyenDeProduction , int DeviationNombreMoyenDeProduction) throws ControlException{
-        super(1, observateur, moyenneTempsDeTraitement, deviationTempsDeTraitement);
+        super(Acteur.typeProducteur, observateur, moyenneTempsDeTraitement, deviationTempsDeTraitement);
         this.nombreDeMessageAEmettre = Aleatoire.valeur(NombreMoyenDeProduction,DeviationNombreMoyenDeProduction);
-        
     }
 
     @Override
@@ -53,8 +51,12 @@ public class Producteur extends Acteur implements _Producteur {
      */
     public void produire(){
         this.nbMess++;
-        MessageX message = new MessageX(this, "");
-        this.msg = message;
+        this.msg =new MessageX(this.identification(), "");
+        try {
+            observateur.productionMessage(this, msg, Aleatoire.valeur(moyenneTempsDeTraitement, deviationTempsDeTraitement)*100);
+        } catch (ControlException ex) {
+            Logger.getLogger(Producteur.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     /**
@@ -63,6 +65,7 @@ public class Producteur extends Acteur implements _Producteur {
     public void deposer(){
         try {
             TestProdCons.tampon.put(this, msg);
+            observateur.depotMessage(this, msg);
         } catch (Exception ex) {
             Logger.getLogger(Producteur.class.getName()).log(Level.SEVERE, null, ex);
         }

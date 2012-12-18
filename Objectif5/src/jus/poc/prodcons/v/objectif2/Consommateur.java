@@ -2,8 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package jus.poc.prodcons.v;
+package jus.poc.prodcons.v.objectif2;
 
+import jus.poc.prodcons.v.objectif5.MessageX;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jus.poc.prodcons.*;

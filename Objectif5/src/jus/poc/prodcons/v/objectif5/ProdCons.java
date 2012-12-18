@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package jus.poc.prodcons.v;
+package jus.poc.prodcons.v.objectif5;
 
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;

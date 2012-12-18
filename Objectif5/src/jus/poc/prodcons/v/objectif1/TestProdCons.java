@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package jus.poc.prodcons.v;
+package jus.poc.prodcons.v.objectif1;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -11,6 +11,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jus.poc.prodcons.*;
+import jus.poc.prodcons.ui.Affichage;
 
 /**
  *
@@ -33,10 +34,16 @@ public class TestProdCons extends Simulateur {
     public static ProdCons tampon;
     //Nombre de messages lues par les consommateurs
     private static int messagesLuesConso;
-    //Nombre de messages à envoyer
+    //Nombre de messages distincts à envoyer
     private static int messageAEnvoyer; 
     //Booleen indiquant que tous les messages ont été lus
     private static boolean STOP ;
+    //Tableau de producteur     
+    private Producteur tableauProducteur[];
+    //Tableau de consommateur
+    private Consommateur tableauConsommateur[];
+    //Ralentissement du temps
+    public static int Temps = 1000;
     
     public TestProdCons(Observateur observateur) {
         super(observateur);
@@ -51,22 +58,31 @@ public class TestProdCons extends Simulateur {
         String file = "options.xml";
         init(file);
         this.observateur.init(nbProd, nbCons, nbBuffer);
+        new jus.poc.prodcons.ui.Affichage(nbProd, nbCons,nbBuffer);
+        //Création des tableaux de consommateurs et producteur
+        tableauConsommateur = new Consommateur[nbCons];
+        tableauProducteur = new Producteur[nbProd];
         //Tampon que se partage producteur et consommateur  
         tampon = new ProdCons(nbBuffer);
         //Création des différents Producteurs
         for (int i =0 ; i!=nbProd;i++){
-            Producteur p = new Producteur(this.observateur, this.getTempsMoyenProduction(),
-                    this.getDeviationTempsMoyenProduction(),this.getNombreMoyenDeProduction(),this.getDeviationNombreMoyenDeProduction());
+            Producteur p = new Producteur(this.observateur, this.tempsMoyenProduction,
+                    this.deviationTempsMoyenProduction,this.nombreMoyenDeProduction,
+                    this.deviationNombreMoyenDeProduction);
+            tableauProducteur[i]=p;
             messageAEnvoyer+= p.getNombreDeMessageAEmettre();
             this.observateur.newProducteur(p);
             p.start();
         } 
+        Affichage.setNombreDeMessagesTotales(messageAEnvoyer);
         //Création des différents consommateurs
         for (int i =0 ; i!=nbCons;i++){
-            Consommateur c = new Consommateur(this.observateur, this.getTempsMoyenConsommation(), this.getDeviationTempsMoyenConsommation());
+            Consommateur c = new Consommateur(this.observateur, this.tempsMoyenConsommation, this.deviationTempsMoyenConsommation);
             this.observateur.newConsommateur(c);
+            tableauConsommateur[i]=c;
             c.start();
-        }       
+        }
+        
     }
 
  
@@ -109,10 +125,9 @@ public class TestProdCons extends Simulateur {
     
     public static void incrémenteNombreMessageConsommées(){
         messagesLuesConso++;
-        if (messagesLuesConso == messageAEnvoyer ){
+        Affichage.setNombreDeMessageLuesConso(messagesLuesConso);
+        if (messagesLuesConso == messageAEnvoyer )
             STOP = true;
-            System.out.println("Stop OK");
-        }
     }
     
     public static boolean getStop(){
@@ -123,91 +138,16 @@ public class TestProdCons extends Simulateur {
         new TestProdCons(new Observateur()).start();
     }
     
-    public int getDeviationNombreMoyenDeProduction() {
-        return deviationNombreMoyenDeProduction;
+    
+    public static int getTemps() {
+        return Temps;
+    }
+    
+    public static int getMessagesLuesConso() {
+        return messagesLuesConso;
     }
 
-    private void setDeviationNombreMoyenDeProduction(int deviationNombreMoyenDeProduction) {
-        this.deviationNombreMoyenDeProduction = deviationNombreMoyenDeProduction;
-    }
-
-    public int getDeviationNombreMoyenNbExemplaire() {
-        return deviationNombreMoyenNbExemplaire;
-    }
-
-    private void setDeviationNombreMoyenNbExemplaire(int deviationNombreMoyenNbExemplaire) {
-        this.deviationNombreMoyenNbExemplaire = deviationNombreMoyenNbExemplaire;
-    }
-
-    public int getDeviationTempsMoyenConsommation() {
-        return deviationTempsMoyenConsommation;
-    }
-
-    private void setDeviationTempsMoyenConsommation(int deviationTempsMoyenConsommation) {
-        this.deviationTempsMoyenConsommation = deviationTempsMoyenConsommation;
-    }
-
-    public int getDeviationTempsMoyenProduction() {
-        return deviationTempsMoyenProduction;
-    }
-
-    private void setDeviationTempsMoyenProduction(int deviationTempsMoyenProduction) {
-        this.deviationTempsMoyenProduction = deviationTempsMoyenProduction;
-    }
-
-    public int getNbBuffer() {
-        return nbBuffer;
-    }
-
-    private void setNbBuffer(int nbBuffer) {
-        this.nbBuffer = nbBuffer;
-    }
-
-    public int getNbCons() {
-        return nbCons;
-    }
-
-    private void setNbCons(int nbCons) {
-        this.nbCons = nbCons;
-    }
-
-    public int getNbProd() {
-        return nbProd;
-    }
-
-    private void setNbProd(int nbProd) {
-        this.nbProd = nbProd;
-    }
-
-    public int getNombreMoyenDeProduction() {
-        return nombreMoyenDeProduction;
-    }
-
-    private void setNombreMoyenDeProduction(int nombreMoyenDeProduction) {
-        this.nombreMoyenDeProduction = nombreMoyenDeProduction;
-    }
-
-    public int getNombreMoyenNbExemplaire() {
-        return nombreMoyenNbExemplaire;
-    }
-
-    private void setNombreMoyenNbExemplaire(int nombreMoyenNbExemplaire) {
-        this.nombreMoyenNbExemplaire = nombreMoyenNbExemplaire;
-    }
-
-    public int getTempsMoyenConsommation() {
-        return tempsMoyenConsommation;
-    }
-
-    private void setTempsMoyenConsommation(int tempsMoyenConsommation) {
-        this.tempsMoyenConsommation = tempsMoyenConsommation;
-    }
-
-    public int getTempsMoyenProduction() {
-        return tempsMoyenProduction;
-    }
-
-    private void setTempsMoyenProduction(int tempsMoyenProduction) {
-        this.tempsMoyenProduction = tempsMoyenProduction;
+    public static int getMessageAEnvoyer() {
+        return messageAEnvoyer;
     }
 }

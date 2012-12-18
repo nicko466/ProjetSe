@@ -2,16 +2,16 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package jus.poc.prodcons.v;
+package jus.poc.prodcons.v.objectif3;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jus.poc.prodcons.*;
+import jus.poc.prodcons.ui.Affichage;
 
 /**
  *
@@ -34,16 +34,10 @@ public class TestProdCons extends Simulateur {
     public static ProdCons tampon;
     //Nombre de messages lues par les consommateurs
     private static int messagesLuesConso;
-    //Nombre de messages distincts à envoyer
+    //Nombre de messages à envoyer
     private static int messageAEnvoyer; 
     //Booleen indiquant que tous les messages ont été lus
     private static boolean STOP ;
-    //Tableau de producteur     
-    private Producteur tableauProducteur[];
-    //Tableau de consommateur
-    private Consommateur tableauConsommateur[];
-    //Ralentissement du temps
-    public static int Temps = 1000;
     
     public TestProdCons(Observateur observateur) {
         super(observateur);
@@ -59,29 +53,23 @@ public class TestProdCons extends Simulateur {
         init(file);
         this.observateur.init(nbProd, nbCons, nbBuffer);
         new jus.poc.prodcons.ui.Affichage(nbProd, nbCons,nbBuffer);
-        //Création des tableaux de consommateurs et producteur
-        tableauConsommateur = new Consommateur[nbCons];
-        tableauProducteur = new Producteur[nbProd];
         //Tampon que se partage producteur et consommateur  
         tampon = new ProdCons(nbBuffer);
         //Création des différents Producteurs
         for (int i =0 ; i!=nbProd;i++){
             Producteur p = new Producteur(this.observateur, this.getTempsMoyenProduction(),
-                    this.getDeviationTempsMoyenProduction(),this.getNombreMoyenDeProduction(),
-                    this.getDeviationNombreMoyenDeProduction());
-            tableauProducteur[i]=p;
+                    this.getDeviationTempsMoyenProduction(),this.getNombreMoyenDeProduction(),this.getDeviationNombreMoyenDeProduction());
             messageAEnvoyer+= p.getNombreDeMessageAEmettre();
             this.observateur.newProducteur(p);
             p.start();
         } 
+        Affichage.setNombreDeMessagesTotales(messageAEnvoyer);
         //Création des différents consommateurs
         for (int i =0 ; i!=nbCons;i++){
             Consommateur c = new Consommateur(this.observateur, this.getTempsMoyenConsommation(), this.getDeviationTempsMoyenConsommation());
             this.observateur.newConsommateur(c);
-            tableauConsommateur[i]=c;
             c.start();
-        }
-        
+        }       
     }
 
  
@@ -124,8 +112,10 @@ public class TestProdCons extends Simulateur {
     
     public static void incrémenteNombreMessageConsommées(){
         messagesLuesConso++;
+        Affichage.setNombreDeMessageLuesConso(messagesLuesConso);
         if (messagesLuesConso == messageAEnvoyer ){
             STOP = true;
+            System.exit(0);
         }
     }
     
@@ -173,10 +163,6 @@ public class TestProdCons extends Simulateur {
         return nbBuffer;
     }
 
-    public Consommateur[] getTableauConsommateur() {
-        return tableauConsommateur;
-    }
-    
     private void setNbBuffer(int nbBuffer) {
         this.nbBuffer = nbBuffer;
     }
@@ -229,7 +215,5 @@ public class TestProdCons extends Simulateur {
         this.tempsMoyenProduction = tempsMoyenProduction;
     }
     
-    public static int getTemps() {
-        return Temps;
-    }
+    
 }
